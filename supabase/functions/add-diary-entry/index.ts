@@ -9,9 +9,12 @@ Deno.serve(async (req) => {
 
   try {
     // フロントエンドから送られてきた日記のテキストを受け取る
-    const { diaryText } = await req.json()
-    if (!diaryText) {
-      throw new Error('日記のテキスト（diaryText）が入力されていません。')
+    const { content, tags, photo_url } = await req.json()
+    if (!content) {
+      throw new Error('日記のテキスト（content）が入力されていません。')
+    }
+    if (!tags) {
+      throw new Error('タグ（tags）が入力されていません。')
     }
 
     const supabaseClient = createClient(
@@ -23,14 +26,14 @@ Deno.serve(async (req) => {
     // OpenAI APIでテキストをベクトルに変換
     const embeddingResponse = await openai.embeddings.create({
       model: 'text-embedding-3-small',
-      input: diaryText,
+      input: content,
     })
     const embedding = embeddingResponse.data[0].embedding
 
     // Supabaseの 'diaries' テーブルにテキストとベクトルを保存
     const { error } = await supabaseClient
       .from('diaries')
-      .insert({ content: diaryText, embedding: embedding })
+      .insert({ content: content, embedding: embedding, tags: tags, photo_url: photo_url })
     
     if (error) {
       throw error

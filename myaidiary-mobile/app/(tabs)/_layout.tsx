@@ -26,6 +26,20 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <TabBarIcon name="calendar" color={color} />,
         }}
       />
+      <Tabs.Screen 
+        name="coach" //`app/(tabs)/coach.tsx` を指す
+        options={{
+          title: 'コーチ',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user" color={color} />,
+        }}
+      />
+      <Tabs.Screen 
+        name="profile" // (tabs)/profile.tsx を指す
+        options={{
+          title: 'プロフィール',
+          tabBarIcon: ({ color }) => <TabBarIcon name="user-circle" color={color} />,
+        }}
+      />
     </Tabs>
   );
 }

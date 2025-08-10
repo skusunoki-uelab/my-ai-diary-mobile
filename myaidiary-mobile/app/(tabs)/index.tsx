@@ -1,188 +1,95 @@
-import { Link } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
-import { Alert, Button, Platform, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
-// 以前作成したAPI関数をインポートする
-import { addDiaryEntry, findSimilarDiary } from '../../src/api/SupabaseAPI';
+import React from 'react';
+import { StyleSheet, View, Text } from 'react-native';
+import { Button } from 'react-native-paper';
+import { useRouter } from 'expo-router';
 
-// --- 日記入力コンポーネント（変更なし） ---
-function DiaryEntry() {
-  const [diaryText, setDiaryText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleSaveDiary = async () => {
-    if (!diaryText.trim()) return;
-    setIsLoading(true);
-    try {
-      await addDiaryEntry(diaryText);
-      Alert.alert('成功', '日記を保存しました！');
-      setDiaryText('');
-    } catch (error) {
-      Alert.alert('エラー', error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.subtitle}>今日の日記を書く</Text>
-      <TextInput
-        style={styles.textInput}
-        multiline
-        placeholder="今日の出来事や感じたことを記録しよう..."
-        placeholderTextColor="#999"
-        value={diaryText}
-        onChangeText={setDiaryText}
-      />
-      <Button
-        title={isLoading ? '保存中...' : '日記を保存する'}
-        onPress={handleSaveDiary}
-        color="#61dafb"
-        disabled={isLoading}
-      />
-    </View>
-  );
-}
-
-
-// --- ▼▼▼ 新しいAI相談コンポーネント ▼▼▼ ---
-function AICoach() {
-  const [problem, setProblem] = useState('');
-  const [result, setResult] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleConsult = async () => {
-    if (!problem.trim()) return;
-    setIsLoading(true);
-    setResult('');
-    try {
-      const data = await findSimilarDiary(problem);
-      if (data.similarDiary) {
-        setResult(`ヒント：『${data.similarDiary.content}』`);
-      } else {
-        setResult('似ている日記は見つかりませんでした。');
-      }
-    } catch (error) {
-      setResult(`エラー: ${error.message}`);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <View style={styles.inputContainer}>
-      <Text style={styles.subtitle}>AIに相談する</Text>
-      <TextInput
-        style={styles.textInput}
-        multiline
-        placeholder="ここに悩みを入力してください..."
-        placeholderTextColor="#999"
-        value={problem}
-        onChangeText={setProblem}
-      />
-      <Button
-        title={isLoading ? '相談中...' : 'AIに相談する'}
-        onPress={handleConsult}
-        color="#61dafb"
-        disabled={isLoading}
-      />
-      {result ? (
-        <View style={styles.resultArea}>
-          <Text style={styles.resultTitle}>AIからのヒント</Text>
-          <Text style={styles.resultText}>{result}</Text>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-// --- ▼▼▼ 全体をまとめるメインコンポーネントを改造 ▼▼▼ ---
 export default function HomeScreen() {
+  // 今日の日付を取得してフォーマット
+  const today = new Date();
+  const dateString = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日`;
+  
+  // 画面遷移のためのルーターを準備
+  const router = useRouter();
+
+  const handlePressWriteButton = () => {
+    // 日記の入力画面に遷移する（今はまだ画面がないので、後で実装します）
+    // router.push('/diary/new'); 
+    router.push('/(diary)/index'); // ここで日記入力画面に遷移します
+  };
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.scrollView} contentContainerStyle={styles.container}>
-        <Text style={styles.title}>AIパーソナルコーチ日記</Text>
-        <Link href="/calendar" asChild>
-          <TouchableOpacity style={styles.button}>
-            <Text style={styles.buttonText}>カレンダーを見る</Text>
-          </TouchableOpacity>
-        </Link>
-        <DiaryEntry />
-        <View style={styles.divider} />
-        <AICoach />
-        <StatusBar style="light" />
-      </ScrollView>
-    </SafeAreaView>
+    // 全体を「表紙」と見立てます
+    <View style={styles.cover}>
+
+      {/* 飾りの「ゴムバンド」 */}
+      <View style={styles.elasticBand} />
+
+      {/* 中央の「タイトルプレート」 */}
+      <View style={styles.titlePlate}>
+        <Text style={styles.titleText}>My Diary</Text>
+        <Text style={styles.dateText}>{dateString}</Text>
+        
+        <Button 
+          icon="pencil"
+          mode="contained"
+          onPress={handlePressWriteButton}
+          style={styles.button}
+          labelStyle={styles.buttonLabel}
+        >
+          日記を書く
+        </Button>
+      </View>
+
+    </View>
   );
 }
 
-// --- スタイル指定（追加・修正あり） ---
+// スタイル定義
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#282c34' },
-  scrollView: { flex: 1 },
-  container: {
-    paddingTop: Platform.OS === 'android' ? 30 : 0,
+  cover: {
+    flex: 1,
+    backgroundColor: '#1d3557', // 落ち着いた紺色
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
-  title: {
-    fontSize: 24,
-    color: 'white',
-    fontWeight: 'bold',
-    marginVertical: 20,
+  titlePlate: {
+    width: '85%',
+    padding: 30,
+    backgroundColor: '#f1faee', // 少しクリームがかった白色
+    borderRadius: 8,
+    alignItems: 'center',
+    // プレートに影をつけて立体感を出す
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
-  inputContainer: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  subtitle: {
+  titleText: {
     fontSize: 18,
-    color: 'white',
+    color: '#457b9d',
     marginBottom: 10,
   },
-  textInput: {
-    backgroundColor: '#3a3f4a',
-    color: 'white',
-    height: 150,
-    padding: 10,
-    borderRadius: 8,
-    textAlignVertical: 'top',
-    marginBottom: 20,
-    fontSize: 16,
-  },
-  divider: {
-    height: 1,
-    width: '90%',
-    backgroundColor: '#444',
-    marginVertical: 10,
-  },
-  resultArea: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: '#3a3f4a',
-    borderRadius: 8,
-  },
-  resultTitle: {
-    fontSize: 16,
-    color: '#61dafb',
+  dateText: {
+    color: '#1d3557',
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 30,
   },
-  resultText: {
-    fontSize: 16,
-    color: 'white',
-    marginTop: 5,
+  button: {
+    width: '80%',
+    paddingVertical: 8,
+    backgroundColor: '#457b9d',
   },
-   button: {
-    backgroundColor: '#61dafb',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginBottom: 20,
+  buttonLabel: {
+    fontSize: 18,
   },
-  buttonText: {
-    color: '#282c34',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
+  elasticBand: {
+    position: 'absolute',
+    right: 30,
+    top: 0,
+    bottom: 0,
+    width: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+  }
 });
